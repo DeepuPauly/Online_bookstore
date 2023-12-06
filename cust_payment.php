@@ -1,0 +1,528 @@
+<?php include 'customer_header.php'; 
+ $cid=$_SESSION['Cust_id'];
+
+ extract($_GET);
+
+if (isset($_POST['payment'])) {
+   extract($_POST);
+
+   $exp=$date;
+   $today=date("Y-m");
+
+   if ($exp < $today) {
+        alert('Your Card have been Expired.');
+   }
+   else{
+
+   $q="insert into tbl_order values(null,'$masterid',curdate(),'0')";
+   $q1=insert($q);
+   $qr="select * from tbl_card where card_no='$cardno'";
+   $hh=select($qr);
+    
+   if(sizeof($hh)>0)
+   {
+    $ooi=$hh[0]['Card_Id'];
+     $q4="insert into tbl_payment values(null,'0','$ooi','$masterid',curdate())";
+     insert($q4);
+     $q5="update tbl_mastcart set cart_status='Paid' where mastcart_id='$masterid'";
+     update($q5);
+   }
+   else{
+      $q2="insert into tbl_card values(null,'$cid','$cardno','$cardholder','$date')";
+      $q3=insert($q2);
+      $q4="insert into tbl_payment values(null,'0','$q3','$masterid',curdate())";
+      insert($q4);
+      $q5="update tbl_mastcart set cart_status='Paid',tot_amount='$newp' where mastcart_id='$masterid'";
+      update($q5);
+   }
+ 
+  
+   $q6="SELECT * FROM `tbl_childcart` WHERE mastcart_id='$masterid'";
+   $q7=select($q6);
+   foreach ($q7 as $res) 
+    {
+
+        $qs="UPDATE `tbl_book` SET `Stock`=`stock`-'".$res['quantity']."' WHERE Book_Id='".$res['Book_Id']."'";
+      update($qs);
+        $its=$res['Book_Id'];
+
+  $how="select * from tbl_book where Book_Id='".$res['Book_Id']."' and Stock='0'";
+     $r=select($how);
+     if (sizeof($r)>0) 
+     {
+         $u="select * from tbl_childpurch where Book_Id='".$res['Book_Id']."' and cpurch_status='available'";
+        $i=select($u);
+        if (sizeof($i)>0) 
+        {
+          $purcid=$i[0]['childpurch_id'];
+          $st=$i[0]['purch_quantity'];
+          $selp=$i[0]['selling_price'];
+           $iupd="update tbl_book set Stock='$st',price='$selp' where Book_Id='".$res['Book_Id']."'";
+          update($iupd);
+           $cupd="update tbl_childpurch set cpurch_status='stock added' where childpurch_id='$purcid'";
+          update($cupd);
+        }else
+        {
+           $a=1;
+        }
+     }else
+     {
+       $b=1;
+     }
+    }
+   
+
+
+     alert("Payment Successful.");
+   return redirect("customer_myorders.php"); 
+    }
+   
+
+   
+}
+
+
+
+
+
+if (isset($_GET['id'])) 
+{
+    extract($_GET);
+    $po="select * from tbl_card inner join tbl_customer where Card_Id='$id'";
+    $gt=select($po);
+}
+
+?>
+    <!-- ======= Chefs Section ======= -->
+    <section id="chefs" class="chefs section-bg">
+      <div class="container" data-aos="fade-up">
+
+        <div class="section-header">
+          <!-- <h2>Chefs</h2> -->
+          <p><span>PAYMENT</span></p>
+        </div>
+             <center>
+  <style type="text/css">
+td{background-color: transparent;font-weight: 2px;color: rgb(2, 2, 2)}
+hr{border-color: orange}
+#b {
+  border: 1px solid grey; 
+  padding: 10px;
+}
+
+</style>
+ 
+            
+
+<div align="center">
+<center> 
+  <form method="post">
+
+    <h2 style="color: rgb(0, 0, 0);"> </h2><br>
+  
+  <table>
+
+    <table style="width: 800px; height: 300px; border-radius: 5px;" class="table table-borderless" id="b"> 
+<div class="member-info">
+      <tr> 
+        <td>PAYMENT DETAILS</td> 
+        <td colspan="2" align="right"></td>
+      </tr>  
+
+
+      <tr> 
+        <td colspan="2"> <small class="member-info">CARD NUMBER</small><br> 
+                    <input type="text" name="cardno" value="<?php if(isset($_GET['id'])){ 
+                            echo $gt[0]['Card_No'];
+                        } ?>" placeholder="CARD NUMBER"  class="form-control" maxlength="16" required pattern="[0-9]{16}" title="Enter 16 digit CARD NUMBER number">
+        </td> 
+      </tr>
+
+
+      <tr> 
+        <td ><small class="member-info">CVV</small><br> 
+          <input type="text" placeholder="CVV"  class="form-control" maxlength="3" required pattern="[0-9]{3}" title="Enter 3 digit CV number">
+        </td> 
+
+        <td>
+         <small class="member-info">EXPIRATION DATE</small><br> 
+          <input type="text" placeholder="YY/MM" name="date"  class="form-control" required pattern="[0-9,/]{5}" name="edate" title="Enter month and year"> 
+        </td>
+      </tr>
+
+      <tr> 
+        <td colspan="2"> <small class="member-info">CARD HOLDER</small><br> 
+          <input type="text" placeholder="Name on card" value="<?php if(isset($_GET['id'])){ 
+                            echo $gt[0]['Card_Holder'];
+                        } ?>" name="cardholder" pattern="[A-Za-z ]+$"  class="form-control" data-valid='only-text' required > 
+        </td>
+      </tr>
+
+     
+        <tr>
+          <th class="member-info">Amount</th>
+          <td><input type="text" name="amount" readonly=""  value="<?php echo $newp ?>" required  class="form-control"></td>
+        </tr>
+
+        <tr>
+          <td align="center" colspan="2"><input type="submit" name="payment" value="PAYMENT" class="btn btn-success"></td>
+        </tr>
+</div>
+    </table>
+
+  </div>
+</form>
+</div></section>
+</center>
+       
+   </div>
+    </section><!-- End Chefs Section -->
+
+
+<!-- hero slider Start -->
+<!--     <div class="banner-wrap" style="height: 90px">
+        <div class="banner-slider">
+             hero slide start -->
+           <!--  <div class="banner-slide bg1">
+                <div class="container">
+                    <div class="hero-content"> --> 
+                        
+                        <!-- <h1 data-animation="flipInX" data-delay="0.8s" data-color="#fff">
+                            Latest<span> Phones </span>Available.</h1>
+                            <div class="cta-btn" data-animation="fadeInDown" data-delay="1s">
+                            <a href="about.html" class="btn btn-style btn-primary">View More</a>
+                        </div> -->
+            <!--         </div>
+                </div>
+                <div class="hero-overlay"></div>
+            </div> -->
+            <!-- hero slide end -->
+    <!--     </div>
+    </div> -->
+    <!-- hero slider end -->
+
+  <!--   <style type="text/css">
+
+.card{
+    margin: auto;
+    width: 600px;
+    padding: 3rem 3.5rem;
+    box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.mt-50 {
+    margin-top: 50px
+}
+
+.mb-50 {
+    margin-bottom: 50px
+}
+
+
+@media(max-width:767px){
+    .card{
+        width: 90%;
+        padding: 1.5rem;
+    }
+}
+@media(height:1366px){
+    .card{
+        width: 90%;
+        padding: 8vh;
+    }
+}
+.card-title{
+    font-weight: 700;
+    font-size: 2.5em;
+}
+.nav{
+    display: flex;
+}
+.nav ul{
+    list-style-type: none;
+    display: flex;
+    padding-inline-start: unset;
+    margin-bottom: 6vh;
+}
+.nav li{
+    padding: 1rem;
+}
+.nav li a{
+    color: black;
+    text-decoration: none;
+}
+.active{
+    border-bottom: 2px solid black;
+    font-weight: bold;
+}
+
+input{
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #000;
+    width: 100%;
+    min-width: unset;
+    background-color: transparent;
+    border-color: transparent;
+    margin: 0;
+}
+form a{
+    color:grey;
+    text-decoration: none;
+    font-size: 0.87rem;
+    font-weight: bold;
+}
+form a:hover{
+    color:grey;
+    text-decoration: none;
+}
+form .row{
+    margin: 0;
+    overflow: hidden;
+}
+form .row-1{
+    border: 1px solid rgba(0, 0, 0, 0.137);
+    padding: 0.5rem;
+    outline: none;
+    width: 100%;
+    min-width: unset;
+    border-radius: 5px;
+    background-color: rgba(221, 228, 236, 0.301);
+    border-color: rgba(221, 228, 236, 0.459);
+    margin: 2vh 0;
+    overflow: hidden;
+}
+form .row-2{
+    border: none;
+    outline: none;
+    background-color: transparent;
+    margin: 0;
+    padding: 0 0.8rem;
+}
+form .row .row-2{
+    border: none;
+    outline: none;
+    background-color: transparent;
+    margin: 0;
+    padding: 0 0.8rem;
+}
+form .row .col-2,.col-7,.col-3{
+    display: flex;
+    align-items: center;
+    text-align: center;
+    padding: 0 1vh;
+}
+form .row .col-2{
+    padding-right: 0;
+}
+
+#card-header{
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+#card-inner{
+    font-size: 0.7rem;
+    color: gray;
+}
+.three .col-7{
+    padding-left: 0;
+}
+.three{
+    overflow: hidden;
+    justify-content: space-between;
+}
+.three .col-2{
+    border: 1px solid rgba(0, 0, 0, 0.137);
+    padding: 0.5rem;
+    outline: none;
+    width: 100%;
+    min-width: unset;
+    border-radius: 5px;
+    background-color: rgba(221, 228, 236, 0.301);
+    border-color: rgba(221, 228, 236, 0.459);
+    margin: 2vh 0;
+    width: fit-content;
+    overflow: hidden; 
+}
+.three .col-2 input{
+    font-size: 0.7rem;
+    margin-left: 1vh;
+}
+.btn{
+    width: 100%;
+    background-color: rgb(65, 202, 127);
+    border-color: rgb(65, 202, 127);
+    color: white;
+    justify-content: center;
+    padding: 2vh 0;
+    margin-top: 3vh;
+}
+.btn:focus{
+    box-shadow: none;
+    outline: none;
+    box-shadow: none;
+    color: white;
+    -webkit-box-shadow: none;
+    -webkit-user-select: none;
+    transition: none; 
+}
+.btn:hover{
+    color: white;
+}
+input:focus::-webkit-input-placeholder { 
+    color:transparent; 
+}
+input:focus:-moz-placeholder { 
+    color:transparent; 
+} 
+input:focus::-moz-placeholder { 
+    color:transparent; 
+} 
+input:focus:-ms-input-placeholder { 
+    color:transparent; 
+}
+
+</style>
+
+
+</head>
+<body>
+
+</body>
+</html> -->
+
+
+<!-- <div class="container-fluid">
+    <div class="row my-5" >
+        
+     
+     
+            
+
+
+<div class="col-md-6 card ">
+            <div class="card-title mx-auto">
+                Payment
+            </div>
+            <div class="nav">
+                <ul class="mx-auto">
+                    
+                    <li class="active"><a href="#">Card Details</a></li>
+                </ul>
+            </div>
+            <form method="POST">
+      
+                <div class="row-1">
+                    <div class="row row-2">
+                        <span id="card-inner">Card holder name</span>
+                    </div>
+                    <div class="row row-2">
+                        <input type="text" placeholder="Enter Your Name" name="cardholder" value="<?php if(isset($_GET['id'])){ 
+                            echo $gt[0]['Card_Holder'];
+                        } ?>">
+                    </div>
+                </div>
+
+                  <div class="row-1">
+                    <div class="row row-2">
+                         <span id="card-inner">Card number</span>
+                    </div>
+                    <div class="row row-2">
+                        <input type="text" name="cardno" pattern="[0-9]{16}" maxlength="16" placeholder="5134-5264-4" value="<?php if(isset($_GET['id'])){ 
+                            echo $gt[0]['Card_No'];
+                        } ?>">
+                    </div>
+                </div>
+
+                    <div class="row-1">
+                    <div class="row row-2">
+                         <span id="card-inner">Exp. date</span>
+                    </div>
+                    <div class="row row-2">
+                        <input type="month" name="date" placeholder="MM/YY">
+                    </div>
+                </div>
+
+                    <div class="row-1">
+                    <div class="row row-2">
+                         <span id="card-inner">CVV</span>
+                    </div>
+                    <div class="row row-2">
+                        <input type="password" placeholder="***" pattern="[0-9]{3}">
+                    </div>
+                    
+                </div>
+            
+
+              
+                <input type="submit" name="Payment" value="Pay" class="btn d-flex mx-auto"> 
+            </form>
+        </div> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ======= Chefs Section ======= -->
+<section id="chefs" class="chefs section-bg">
+  <div class="container" data-aos="fade-up">
+    <div class="section-header" style="width: 500px">
+      <h2></h2><!-- Add appropriate title here -->
+      <p><span>Choose</span> Card</p>
+    </div>
+    <div class="row gy-4">
+      <div class="col-lg-4 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+        <?php
+        // Assuming $cid is defined before this code block
+        $k = "SELECT * FROM tbl_card WHERE Cust_Id='$cid'";
+        $hg = select($k);
+
+        if (sizeof($hg) > 0) {
+          foreach ($hg as $keyy) {
+            ?>
+            <div class="col-2"><img class="img-fluid" src="https://img.icons8.com/color/48/000000/mastercard-logo.png"/></div>
+            <div class="col-7">
+              <input type="text" placeholder="**** **** **** 3193">
+            </div>
+            <div class="col-3 d-flex justify-content-center">
+              <a href="?id=<?php echo $keyy['Card_Id']; ?>&cust_payment=<?php echo $cust_payment; ?>&quantity=<?php echo $quantity; ?>&masterid=<?php echo $masterid; ?>&newp=<?php echo $newp; ?>">Choose card</a>
+            </div>
+            <?php
+          }
+        }
+        ?>
+        <div class="chef-member">
+          <div class="member-info">
+            <h4></h4><!-- Add appropriate chef name here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section><!-- End Chefs Section -->
+
+
+  </div>
+
+        </div>
+        </div>
+    </div>
+    
+
+
+
+
+
+<?php include 'footernew.php' ?>

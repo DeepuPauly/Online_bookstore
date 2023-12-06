@@ -1,0 +1,114 @@
+from datetime import datetime
+
+@user.route('/userview_taxi_permit')
+def userview_taxi_permit():
+    data = {}
+    vehicle_id = request.args['vehicle_id']
+    q = "select * from taxipermit where vehicle_id='%s'" % (vehicle_id)
+    print("IIIIIIIIIIIIIIIIIIIII",q)
+
+    data['view'] = select(q)   
+    print("KKKKKOOOOOOOOOOOOOOOOOO",data['view'])
+
+
+
+    v = "SELECT CURDATE() as date"
+    data['check'] = select(v)[0]['date']  # Assuming 'date' is the key for the date string
+    print("kkkkkkkkkkkkkkk", data['check'])
+    if 'action' in request.args:
+        action = request.args['action']
+        vehicle_id = request.args['vehicle_id']
+    else:
+        action = None
+
+    if action == "renewtaxi":
+        qq = "select * from permitrequest where vehicle_id='%s'" % (vehicle_id)
+        res = select(qq)
+
+        if res:
+            pid = res[0]['vehicle_id']
+            qs = "select * from taxipermit where vehicle_id='%s'" % (pid)
+
+
+
+            if ress:
+                # current_date = datetime.strptime(data['check'], "%Y-%m-%d")
+                # to_date = datetime.strptime(ress[0]['to_date'], "%Y-%m-%d")
+                current_date = data['check'].strftime("%Y-%m-%d")
+                to_date = ress[0]['to_date'].strftime("%Y-%m-%d")
+
+                if current_date <= to_date:
+                    flash('Your taxi permit not expired.')
+                    return redirect(url_for('user.taxi_permit'))
+                elif current_date >= to_date:
+                    q = "insert into permitrequest values(null, '%s', curdate(), 'renew')" % (vehicle_id)
+                    insert(q)
+                    print("djdndjd",q)
+                    flash('Your taxi permit has been renewed.')
+                    return redirect(url_for('user.taxi_permit'))
+
+
+
+
+
+
+
+
+
+
+
+v = "SELECT CURDATE() as date"
+    data['check'] = select(v)[0]['date']  # Assuming 'date' is the key for the date string
+
+
+
+
+
+                    current_date = data['check'].strftime("%Y-%m-%d")
+                to_date = ress[0]['to_date'].strftime("%Y-%m-%d")
+
+
+
+
+                <!-- <?php 
+
+
+$v = "SELECT CURDATE() as date";
+$check= select($v)[0]['date'];  # Assuming 'date' is the key for the date string
+echo $check;
+
+   echo "current_date" ,$current_date = $check.strftime("%Y-%m-%d");
+    echo "to_date" , $to_date = $expected_date.strftime("%Y-%m-%d");
+
+
+// current_date2023-10-21
+// 2023-10-21
+// to_date
+// 2023-10-28
+// 2023-10-21
+
+
+
+
+
+ ?> -->
+
+
+
+
+<!-- <?php                 if ($current_date >= $to_date)
+
+{
+ ?>
+ -->
+
+// if (sizeof($myval)>0) {
+  # code...
+  // $cart_mid=$myrow[0]['mastcart_id'];
+  // $cart_status=$row['ostatus'];
+  // // $myval[0]["cart_status"];
+  // $Username=$myrow[0]['mycourier'];
+  // $Cust_Id=$myrow[0]['Cust_Id'];
+  // $deliver=$myrow[0]['Delivery_Id'];
+  // $my_date=$myrow[0]['cassign_date'];
+  //  $expected_date=$myrow[0]['expected_date'];

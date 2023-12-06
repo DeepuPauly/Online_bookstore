@@ -1,0 +1,29 @@
+/* Style the navigation bar */
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    
+}
+
+nav li {
+    float: left;
+    margin-right: 10px;
+}
+
+/* Style the navigation bar links */
+nav a {
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Style the dropdown */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+
